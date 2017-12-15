@@ -72,9 +72,30 @@ function newItemElement(details) {
   var html = subKeyValues(itemTemplate, details);
   // set HTML
   li.innerHTML = html;
-  li.id = 'item-'+ details.id;
+  li.setAttribute('itemid', details.id);
 
   return li;
+}
+
+function applyFilters() {
+  for (var i = 0; i < itemListEl.children.length; i++) {
+    var item = itemListEl.children[i];
+    if (typeof item !== 'object') continue;
+
+    var details = phoneDetails[item.getAttribute('itemid') -1];
+    var show = true;
+    for (var k in filters) {
+      var values = filters[k];
+      // check for any filters for this feature, and if this item passes
+      show = show && (Object.keys(values).length <1 || (details[k] in values))
+    }
+
+    if (show) {
+      item.classList.remove('hidden');
+    } else {
+      item.classList.add('hidden');
+    }
+  }
 }
 
 // modify filters when an input is changed
@@ -88,6 +109,8 @@ function filterListener(par) {
   } else {
     delete filters[feature][key];
   }
+
+  applyFilters();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -104,6 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
       var itemEl = newItemElement(phoneDetails[key]);
       itemListEl.appendChild(itemEl);
     }
+
+    // apply filters on load
+    applyFilters();
   });
 
   itemListEl = document.querySelector('.products-list');
@@ -126,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // set listener, called with input as 'this', and its filter-criteria parent
       input.onchange = filterListener.bind(input, child);
 
-      // apply listener to apply filters on page load
+      // apply listener to set filters
       filterListener.call(input, child);
     }
   }

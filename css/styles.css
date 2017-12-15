@@ -11,6 +11,10 @@ h1, h3{
 	font: normal 24px 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .main-content {
 	box-sizing: border-box;
 	text-align: center;
