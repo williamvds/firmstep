@@ -1,6 +1,7 @@
 'use strict'
 
-var I = document.getElementById;
+var phoneDetails, // Dict of phone details
+  itemListEl; // ul element holding phones
 
 // send an AJAX request to given url, call done() when complete
 function ajax(url, done){
@@ -19,7 +20,7 @@ function ajax(url, done){
 
 // template of item element (excluding surrounding li)
 var itemTemplate = '<a href="#" class="product-photo">'
-  +'<img src="{{img}}" height="130" alt="{{name}}">'
+  +'<img src="{{small}}" height="130" alt="{{name}}">'
   +'</a>'
   +'<h2><a href="#">{{name}}</a></h2>'
   +'<ul class="product-description">'
@@ -29,9 +30,9 @@ var itemTemplate = '<a href="#" class="product-photo">'
   +'<li><span>Camera: </span>{{camera}} Mpx</li>'
   +'<li><span>Description: </span>{{description}}</li>'
   +'</ul>'
-  +'<p class="product-price">{{price}}</p>';
+  +'<p class="product-price">£{{price}}</p>';
 
-// recursively substitute dict values into string by replacing keys
+// recursively substitute dict values into string by replacing {{keys}}
 function subKeyValues(str, details) {
   for (var key in details) {
     var val = details[key];
@@ -50,7 +51,7 @@ function subKeyValues(str, details) {
 }
 
 // create a new item element, fill info, and return it
-function newItemHTML(details) {
+function newItemElement(details) {
   var li = document.createElement('li');
 
   // form HTML from template
@@ -61,3 +62,15 @@ function newItemHTML(details) {
   return li;
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+  ajax('products.json', function(json) {
+    phoneDetails = json;
+
+    for (var key in phoneDetails) {
+      var itemEl = newItemElement(phoneDetails[key]);
+      itemListEl.appendChild(itemEl);
+    }
+  });
+
+  itemListEl = document.querySelector('.products-list');
+});
