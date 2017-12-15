@@ -113,6 +113,19 @@ function filterListener(par) {
   applyFilters();
 }
 
+function clearFilters() {
+  var inputs = document.getElementsByTagName('input');
+  for (var k in inputs) {
+    var input = inputs[k];
+    if (typeof input !== 'object') continue;
+
+    input.checked = false;
+    input.onchange();
+  }
+
+  applyFilters();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ajax('products.json', function(dict) {
     phoneDetails = dict;
