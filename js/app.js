@@ -1,7 +1,8 @@
 'use strict';
 
 var phoneDetails, // Dict of phone details
-  itemListEl; // ul element holding phones
+  itemListEl, // ul element holding phones
+  filters = {}; // 2d dict of keys, and the values that should be allowed
 
 // flatten a multi-dimensional dict into 1D
 function flatten(dict, root, key) {
@@ -71,8 +72,22 @@ function newItemElement(details) {
   var html = subKeyValues(itemTemplate, details);
   // set HTML
   li.innerHTML = html;
+  li.id = 'item-'+ details.id;
 
   return li;
+}
+
+// modify filters when an input is changed
+function filterListener(par) {
+  var key = this.getAttribute('value') || this.nextSibling.textContent,
+    feature = par.getAttribute('feature');
+
+  if (this.checked) {
+    filters[feature][key] = true;
+
+  } else {
+    delete filters[feature][key];
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -92,4 +107,27 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   itemListEl = document.querySelector('.products-list');
+
+  // set onChange for all filter checkboxes
+  var form = document.querySelector('form');
+  for (var k in form.children) {
+    var child = form.children[k];
+    // only get filter-criteria
+    if (typeof child !== 'object' || child.className != 'filter-criteria') continue;
+
+    filters[child.getAttribute('feature')] = {};
+
+    var inputs = child.getElementsByTagName('input');
+    for (var k in inputs) {
+      var input = inputs[k];
+      // only get actual elements
+      if (typeof input !== 'object') continue;
+
+      // set listener, called with input as 'this', and its filter-criteria parent
+      input.onchange = filterListener.bind(input, child);
+
+      // apply listener to apply filters on page load
+      filterListener.call(input, child);
+    }
+  }
 });
