@@ -1,7 +1,27 @@
-'use strict'
+'use strict';
 
 var phoneDetails, // Dict of phone details
   itemListEl; // ul element holding phones
+
+// flatten a multi-dimensional dict into 1D
+function flatten(dict, root, key) {
+  for (var k in dict) {
+    var val = dict[k]
+    if (typeof val !== 'object') {
+      if (root) {
+        root[k] = val;
+      }
+      continue;
+    }
+
+    flatten(val, dict, k);
+  }
+
+  // remove sub-dict
+  if (root) {
+    delete root[key];
+  }
+}
 
 // send an AJAX request to given url, call done() when complete
 function ajax(url, done){
@@ -32,19 +52,12 @@ var itemTemplate = '<a href="#" class="product-photo">'
   +'</ul>'
   +'<p class="product-price">£{{price}}</p>';
 
-// recursively substitute dict values into string by replacing {{keys}}
+// substitute dict values into string by replacing {{keys}}
 function subKeyValues(str, details) {
   for (var key in details) {
-    var val = details[key];
-    if (typeof val === 'object') {
-      // recurse if this is a sub-dict
-      str = subKeyValues(str, val);
-      continue;
-    }
-
     // replace pattern {{key}} with respective value
     str = str.replace(new RegExp('{{'+ key +'}}', 'g'),
-      val);
+      details[key]);
   }
 
   return str;
@@ -63,9 +76,15 @@ function newItemElement(details) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  ajax('products.json', function(json) {
-    phoneDetails = json;
+  ajax('products.json', function(dict) {
+    phoneDetails = dict;
 
+    // flatten the individual phone dicts
+    for (var key in phoneDetails) {
+      flatten(phoneDetails[key]);
+    }
+
+    // create all phone items initially
     for (var key in phoneDetails) {
       var itemEl = newItemElement(phoneDetails[key]);
       itemListEl.appendChild(itemEl);
